@@ -7,7 +7,7 @@
 
 #include "config.h"
 
-namespace panos {
+namespace puzzle {
 
 std::string GetBacktraceString(int max_frame_num = 128, int skip = 2, const std::string &prefix = "");
 

@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace panos {
+namespace puzzle {
 
 #define FILE_RELATIVE_PATH (static_cast<const char *>(__FILE__) + SOURCE_FILE_PREFIX_SIZE)
 

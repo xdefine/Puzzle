@@ -26,19 +26,19 @@ static std::string Demangle(const char *str) {
 }
 
 std::string GetBacktraceString(int max_frame_num, int skip, const std::string &prefix) {
-    void **callstack = static_cast<void **>(malloc(sizeof(void *) * max_frame_num));
-    int frame_num = ::backtrace(callstack, max_frame_num);
-    char **symbols_strings = ::backtrace_symbols(callstack, frame_num);
+    void **call_stack = static_cast<void **>(malloc(sizeof(void *) * max_frame_num));
+    int frame_num = ::backtrace(call_stack, max_frame_num);
+    char **symbols_strings = ::backtrace_symbols(call_stack, frame_num);
     if (symbols_strings == nullptr) {
         return {};
     }
-    std::ostringstream trace_buf;
+    std::ostringstream traceBuf;
     for (int i = skip; i < frame_num; ++i) {
-        trace_buf << prefix << " " << Demangle(symbols_strings[i]) << "\n";
+        traceBuf << prefix << " " << Demangle(symbols_strings[i]) << "\n";
     }
     free(symbols_strings);
-    free(callstack);
-    return trace_buf.str();
+    free(call_stack);
+    return traceBuf.str();
 }
 
 }  // namespace panos
