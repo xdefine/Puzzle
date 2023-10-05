@@ -41,7 +41,6 @@ enum class LogLevel {
  */
 class LogBuffer {
 public:
-    bool Append(const char *log, Size len);
     LogBuffer();
     LogBuffer(LogBuffer &other) = delete;
     LogBuffer(LogBuffer &&other) noexcept;
@@ -50,8 +49,9 @@ public:
     LogBuffer &operator=(LogBuffer &&other) = delete;
     ~LogBuffer();
 
+    bool Append(const char *log, Size len);
     void WriteToFd(int fd);
-    Size GetLength() const;
+    bool IsEmpty() const;
 
 private:
     friend void swap(LogBuffer &lhs, LogBuffer &rhs);
@@ -65,7 +65,6 @@ void swap(LogBuffer &lhs, LogBuffer &rhs) {
     std::swap(lhs.buffer_, rhs.buffer_);
     std::swap(lhs.len_, rhs.len_);
 }
-
 
 class Log {
 public:
@@ -88,16 +87,17 @@ private:
 
     constexpr static std::chrono::microseconds kInitSleepTime {500};
     constexpr static std::chrono::microseconds kMaxSleepTime {5000};
-    std::chrono::microseconds sleep_time;
+    std::chrono::microseconds sleep_time_;
 
     std::atomic<bool> keep_running_;
-    void FlushBuffersToLogFile();
 
 private:
     Log();
+    static Log &GetInstance();
     static std::stringstream GenerateLogHeader(Module module, const char *file, int line, LogLevel level);
     void AppendLog(const char *log, Size len);
-    static Log &GetInstance();
+
+    void FlushBuffersToLogFile();
 };
 
 }  // namespace puzzle

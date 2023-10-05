@@ -46,11 +46,11 @@ void LogBuffer::WriteToFd(int fd) {
     Assert(fsync(fd) == 0);
 }
 
-Size LogBuffer::GetLength() const {
-    return len_;
+bool LogBuffer::IsEmpty() const {
+    return len_ == 0;
 }
 
-Log::Log() : log_fd_(-1), sleep_time(kInitSleepTime), keep_running_(true) {
+Log::Log() : log_fd_(-1), sleep_time_(kInitSleepTime), keep_running_(true) {
     log_fd_ = open(kLogFilePath, O_APPEND | O_WRONLY | O_CREAT, S_IRWXU | S_IRGRP | S_IROTH);
     if (log_fd_ == -1) {
         std::cout << "Log::Open log file error: " << strerror(errno) << std::endl;
@@ -100,16 +100,16 @@ void Log::FlushBuffersToLogFile() {
         std::vector<LogBuffer> flush_queue;
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            if (flush_queue_.empty() && buffer_.GetLength() == 0) {
+            if (flush_queue_.empty() && buffer_.IsEmpty()) {
                 if (!keep_running_) {
                     break;
                 }
-                notify_.wait_for(lock, sleep_time);
-                sleep_time = min(sleep_time * 2, kMaxSleepTime);
+                notify_.wait_for(lock, sleep_time_);
+                sleep_time_ = min(sleep_time_ * 2, kMaxSleepTime);
                 continue;
             }
-            sleep_time = kInitSleepTime;
-            if (buffer_.GetLength()) {
+            sleep_time_ = kInitSleepTime;
+            if (!buffer_.IsEmpty()) {
                 LogBuffer t_buffer;
                 swap(t_buffer, buffer_);
                 flush_queue_.emplace_back(std::move(t_buffer));
